@@ -1,0 +1,29 @@
+eece 315 Project #1 List of things to be done.
+
+
+Tasks to be addressed:
+- net goal - design, code and test a replacement for the shell in a Linux Box
+- How command names and param lists are managed by the shell?
+- How to find the location of the file that contains the command
+- How to execute the program?
+- How to organize our shell?
+
+
+Requirements:
+- code in C, compile with 'gcc'
+- prompt holds the count ofcommands entered so far, per session, and the current path
+- Allow the user to:
+	- run a program in current dir, or linux PATH  ( excv command)
+	- check/modify PATH
+	- create, modify, and delete ENVIRONMENT Vars (set command)
+	- Traverse the directory tree (ls, cd)
+	- Rename, copy, move, or delete files ( mv, cp, rm )
+	- run processes in the background (& folling the command) 
+
+
+
+To submit:
+1) a formal written report  labelled 315P1R.doc
+2) The source code          labelled 315P1S.c
+3) Executable file that runs on a linux machin in the ECE Dept labelled 315P1
+4) printed, fully commented source code with test runs and written report on detected bugs, the conditions that the bugs arise on, and why there arent fixed <-- dont skip this
