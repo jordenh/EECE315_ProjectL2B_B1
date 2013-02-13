@@ -33,16 +33,25 @@ int main(void){
 	printf("The value of argc is: %d\n" ,nextCommand.argc);
 	printf("The value of name is: %s\n" ,nextCommand.name);
 
-
+	nextCommand.argc = 0;
 	while(!exitBool){
+		//clear argv/argc/name for the next input.			
+        	for(i=0;i<=nextCommand.argc;i++){
+	            for(j=0;j<BUFFER;j++){
+        	        nextCommand.argv[i][j] = '\0'; //replace all of allocated buffer size to null
+        	    }
+        	}
+		for(i=0;i<BUFFER;i++){
+			nextCommand.name[i] = '\0';
+		}	
+        	 
+        	nextCommand.argc = 0;
+		charParserIndex = 0;
+		individualCharIndex = 0;		
 
 		printf("cmd%d:~myDirectoryValue> ", commandCount);
 		bytes_read = getline(&nextCommand.argv[0], &nbytes, stdin);
-        printf("ping3 --%s--\n",nextCommand.argv[0]);
-	        
-		nextCommand.argc = 0;
-		charParserIndex = 0;
-		individualCharIndex = 0;
+		
 		tempChar = nextCommand.argv[0][charParserIndex];
 		while(tempChar != '\n' ){
 			if(nextCommand.argc == 0){
@@ -52,7 +61,7 @@ int main(void){
 				else{
 					nextCommand.argc++;  //move to next string
 					individualCharIndex = 0;
-					printf("ping1%s\n", nextCommand.name);
+					printf("ping1%s,%d,%d\n", nextCommand.name, nextCommand.argc,charParserIndex);
 				}
 			}
 			else{
@@ -63,15 +72,14 @@ int main(void){
 					nextCommand.argc++;  //move to next string
 					individualCharIndex = 0;
 
-					printf("ping2%s\n", nextCommand.argv[nextCommand.argc]);
+					printf("ping2%s,%d\n", nextCommand.argv[nextCommand.argc], nextCommand.argc);
 				}
 			}
 			charParserIndex++;
 			tempChar = nextCommand.argv[0][charParserIndex];
 		}
 
-		nextCommand.argv[0] = nextCommand.name;
-		printf("You typed: %s\n",nextCommand.name);
+		strcpy(nextCommand.argv[0],nextCommand.name);
 		
 		for(i=0; i<=nextCommand.argc; i++){
 			printf("-%s-\n",nextCommand.argv[i]);
@@ -83,15 +91,7 @@ int main(void){
 
         //PERFORM ACTION HERE
 
-        //clear argv/argc/name for the next input.
-
-        for(i=0;i<=nextCommand.argc;i++){
-            for(j=0;j<BUFFER;j++){
-                nextCommand.argv[i][j] = (char)0x0; //replace all of allocated buffer size to 0
-            }
-        }
-        nextCommand.name = nextCommand.argv[0];
-        nextCommand.argc = 0;
+        
 	}
 
 
