@@ -6,13 +6,11 @@
 #define TRUE 1
 #define FALSE 0
 
-struct command_t {
+typedef struct command_t {
     int argc;
     char* name;
     char* argv[99]; //name is repeated in argv[0]
-};
-
-typedef struct command_t command;
+} command;
 
 int main(void){
 	int exitBool = FALSE;
