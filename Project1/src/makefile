@@ -1,8 +1,11 @@
 CC=gcc
-CFLAGS=-g
+CFLAGS=-g -Wall
 
-all:
+all: bfsh
+
+bfsh: bfsh.c
+	$(CC) $(CFLAGS) bfsh.c -o bfsh
 
 clean:
-	rm -rf *o
+	rm -rf *o bfsh
 
