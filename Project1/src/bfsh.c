@@ -1,6 +1,7 @@
 #include<stdlib.h>
 #include<stdio.h>
 #include<string.h>
+#include<unistd.h>
 
 #define BUFFER 300
 #define TRUE 1
@@ -18,12 +19,11 @@ int main(void){
 	command nextCommand ;	
 	int commandCount = 0;
 	int individualCharIndex = 0;
-	int nbytes= BUFFER;
-	char* tempChar=malloc(nbytes+1);
+	int nbytes = BUFFER;
+	char* tempChar = (char*)malloc(nbytes+1);
 	nextCommand.argc = 0;
-
-
 	nextCommand.name = (char*)malloc(nbytes+1);
+	
 	for(int i=0;i<100;i++){
 		nextCommand.argv[i] = (char*)malloc(nbytes+1);
 	}    
@@ -31,7 +31,10 @@ int main(void){
 
 	while(!exitBool){
 		//clear argv/argc/name for the next input.			
-        	for(int i=0;i<=nextCommand.argc;i++){
+       		nextCommand.argc = 0;
+		individualCharIndex = 0;		
+
+	 	for(int i=0;i<=nextCommand.argc;i++){
 	            for(int j=0;j<BUFFER;j++){
         	        nextCommand.argv[i][j] = '\0'; //replace all of allocated buffer size to null
         	    }
@@ -40,10 +43,7 @@ int main(void){
 			nextCommand.name[i] = '\0';
 		}	
         	 
-        	nextCommand.argc = 0;
-		individualCharIndex = 0;		
-
-		printf("cmd%d:~myDirectoryValue> ", commandCount);
+       		printf("cmd%d:~myDirectoryValue> ", commandCount);
 		fgets(tempChar, (nbytes+1), stdin);
 		
 		while(*tempChar != '\n' ){
