@@ -17,7 +17,7 @@ int main(void){
 	command nextCommand ;	
 	int commandCount = 0;
 	int exitBool = FALSE;
-	int i;
+	int i,j;
 	int charParserIndex = 0;
 	int individualCharIndex = 0;
 	char tempChar;
@@ -38,7 +38,7 @@ int main(void){
 
 		printf("cmd%d:~myDirectoryValue> ", commandCount);
 		bytes_read = getline(&nextCommand.argv[0], &nbytes, stdin);
-
+        printf("ping3 --%s--\n",nextCommand.argv[0]);
 	        
 		nextCommand.argc = 0;
 		charParserIndex = 0;
@@ -80,6 +80,18 @@ int main(void){
 		if(1){
 			commandCount++;
 		}
+
+        //PERFORM ACTION HERE
+
+        //clear argv/argc/name for the next input.
+
+        for(i=0;i<=nextCommand.argc;i++){
+            for(j=0;j<BUFFER;j++){
+                nextCommand.argv[i][j] = (char)0x0; //replace all of allocated buffer size to 0
+            }
+        }
+        nextCommand.name = nextCommand.argv[0];
+        nextCommand.argc = 0;
 	}
 
 
