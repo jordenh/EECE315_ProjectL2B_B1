@@ -19,9 +19,9 @@ int runCommand(command * nextCommand);
 
 void clear_buffers(command *nextCommand){
 	for(int i=0;i<=nextCommand->argc;i++){
-        nextCommand->argv[i][0] = '\0';
+		nextCommand->argv[i][0] = '\0';
 	}
-    nextCommand->name[0] = '\0';	
+	nextCommand->name[0] = '\0';	
         	
 	nextCommand->argc = 0;
 }
@@ -69,6 +69,9 @@ int main(void){
 	char *cwd = (char*)malloc(nbytes+1);
 	char *tempStr = (char*)malloc(nbytes+1);
 	char CWD[BUFFER];
+	char *hostname = (char*)malloc(nbytes+1);
+	char *user = (char*)malloc(nbytes+1);
+		
 	command nextCommand ;
 	nextCommand.argc = 0;
 	nextCommand.name = (char*)malloc(nbytes+1);
@@ -81,12 +84,15 @@ int main(void){
 	while(!exitBool){
 		clear_buffers(&nextCommand);
 		update_CWD(CWD);
-       		printf("cmd:%s>> ", CWD);
+		gethostname(hostname, BUFFER);
+		user = getenv("USER");
+
+       		printf("[%s@%s %s]$ ", user, hostname, CWD);
 		fgets(tempStr, (nbytes+1), stdin);
-        tempStr[strlen(tempStr)-1] = '\0'; // remove the carriage return from the input
+		tempStr[strlen(tempStr)-1] = '\0'; // remove the carriage return from the input
 		parse_arguments(&nextCommand, tempStr);
 
-        runCommand(&nextCommand);	
+		runCommand(&nextCommand);	
 	}
 	
 	free(tempStr);
