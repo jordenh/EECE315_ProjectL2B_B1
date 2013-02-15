@@ -13,14 +13,46 @@ typedef struct command_t {
     char* argv[99]; //name is repeated in argv[0]
 } command;
 
+void clear_buffers(command *nextCommand){
+	for(int i=0;i<=nextCommand->argc;i++){
+		for(int j=0;j<BUFFER;j++){
+			nextCommand->argv[i][j] = '\0'; //replace all of allocated buffer size to null
+		}
+	}
+	for(int i=0;i<BUFFER;i++){
+		nextCommand->name[i] = '\0';
+	}	
+        	
+	nextCommand->argc = 0;
+}
+
+void parse_arguments(command *nextCommand, char *tempStr){
+	char* token = (char*)malloc(BUFFER+1);
+	
+	token = strtok(tempStr, " ");
+	while(token){
+		if(nextCommand->argc == 0){
+			strcpy(nextCommand->name, token);
+			strcpy(nextCommand->argv[nextCommand->argc], token);
+		}
+		else
+			strcpy(nextCommand->argv[nextCommand->argc], token);
+		
+		nextCommand->argc++;
+		token = strtok(NULL, " ");
+	}
+		
+	for(int i=0; i<nextCommand->argc; i++)	
+		printf("%s \n", nextCommand->argv[i]);
+	free(token);
+}
+
 int main(void){
 	int exitBool = FALSE;
-	//char* pwd;
-	command nextCommand ;	
-	int commandCount = 0;
-	int individualCharIndex = 0;
 	int nbytes = BUFFER;
-	char* tempChar = (char*)malloc(nbytes+1);
+	char *cwd = (char*)malloc(nbytes+1);
+	char *tempStr = (char*)malloc(nbytes+1);
+	command nextCommand ;
 	nextCommand.argc = 0;
 	nextCommand.name = (char*)malloc(nbytes+1);
 	
@@ -30,60 +62,20 @@ int main(void){
 
 
 	while(!exitBool){
-		//clear argv/argc/name for the next input.			
-       		nextCommand.argc = 0;
-		individualCharIndex = 0;		
-
-	 	for(int i=0;i<=nextCommand.argc;i++){
-	            for(int j=0;j<BUFFER;j++){
-        	        nextCommand.argv[i][j] = '\0'; //replace all of allocated buffer size to null
-        	    }
-        	}
-		for(int i=0;i<BUFFER;i++){
-			nextCommand.name[i] = '\0';
-		}	
-        	 
-       		printf("cmd%d:~myDirectoryValue> ", commandCount);
-		fgets(tempChar, (nbytes+1), stdin);
-		
-		while(*tempChar != '\n' ){
-			if(nextCommand.argc == 0){
-				if(*tempChar != 0x20){
-					nextCommand.name[individualCharIndex++] = *tempChar;
-				}
-				else{
-					nextCommand.argc++;  //move to next string
-					individualCharIndex = 0;
-					//printf("ping1%s,%d,%d\n", nextCommand.name, nextCommand.argc,charParserIndex);
-				}
-			}
-			else{
-				if(*tempChar != 0x20){
-					nextCommand.argv[nextCommand.argc][individualCharIndex++] = *tempChar;
-				}
-				else{
-					nextCommand.argc++;  //move to next string
-					individualCharIndex = 0;
-
-					//printf("ping2%s,%d\n", nextCommand.argv[nextCommand.argc], nextCommand.argc);
-				}
-			}
-			tempChar++;
-		}
-
-		strcpy(nextCommand.argv[0],nextCommand.name);
-		
-		for(int i=0; i<=nextCommand.argc; i++){
-			printf("-%s-\n",nextCommand.argv[i]);
-		}
-
-		if(1){
-			commandCount++;
-		}
-
-        
+		clear_buffers(&nextCommand);
+       		printf("cmd:~myDirectoryValue> ");
+		fgets(tempStr, (nbytes+1), stdin);
+		parse_arguments(&nextCommand, tempStr);	
 	}
-
+	
+	free(tempStr);
+	free(cwd);
+	free(nextCommand.name);
+	for(int i=0;i<100;i++){
+		free(nextCommand.argv[i]);
+	}    
 
 	return 0;
 }
+
+
