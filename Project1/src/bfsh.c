@@ -81,7 +81,7 @@ int main(void){
 	while(!exitBool){
 		clear_buffers(&nextCommand);
 		update_CWD(CWD);
-       	printf("cmd:%s ", CWD);
+       		printf("cmd:%s ", CWD);
 		fgets(tempStr, (nbytes+1), stdin);
 		parse_arguments(&nextCommand, tempStr);	
 	}
