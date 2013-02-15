@@ -47,11 +47,28 @@ void parse_arguments(command *nextCommand, char *tempStr){
 	free(token);
 }
 
+void update_CWD(char* cwd) {
+	
+	char* homeDirectory;
+	getcwd(cwd, BUFFER);
+	homeDirectory = getenv("HOME");
+
+	if(memcmp(cwd, homeDirectory, sizeof(homeDirectory)) == 0) {
+		cwd[2*(sizeof(homeDirectory)-2)] = '~';
+		for (int i=0;i<BUFFER - 2*(sizeof(homeDirectory)-2);i++) {
+			cwd[i] = cwd[i + 2*(sizeof(homeDirectory)-2)];
+		}
+	}
+
+	return;
+}
+
 int main(void){
 	int exitBool = FALSE;
 	int nbytes = BUFFER;
 	char *cwd = (char*)malloc(nbytes+1);
 	char *tempStr = (char*)malloc(nbytes+1);
+	char CWD[BUFFER];
 	command nextCommand ;
 	nextCommand.argc = 0;
 	nextCommand.name = (char*)malloc(nbytes+1);
@@ -63,7 +80,8 @@ int main(void){
 
 	while(!exitBool){
 		clear_buffers(&nextCommand);
-       		printf("cmd:~myDirectoryValue> ");
+		update_CWD(CWD);
+       	printf("cmd:%s ", CWD);
 		fgets(tempStr, (nbytes+1), stdin);
 		parse_arguments(&nextCommand, tempStr);	
 	}
@@ -77,5 +95,3 @@ int main(void){
 
 	return 0;
 }
-
-
