@@ -2,6 +2,8 @@
 #include<stdio.h>
 #include<string.h>
 #include<unistd.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 
 #define BUFFER 300
 #define TRUE 1
@@ -13,15 +15,13 @@ typedef struct command_t {
     char* argv[99]; //name is repeated in argv[0]
 } command;
 
+int runCommand(command * nextCommand);
+
 void clear_buffers(command *nextCommand){
 	for(int i=0;i<=nextCommand->argc;i++){
-		for(int j=0;j<BUFFER;j++){
-			nextCommand->argv[i][j] = '\0'; //replace all of allocated buffer size to null
-		}
+        nextCommand->argv[i][0] = '\0';
 	}
-	for(int i=0;i<BUFFER;i++){
-		nextCommand->name[i] = '\0';
-	}	
+    nextCommand->name[0] = '\0';	
         	
 	nextCommand->argc = 0;
 }
@@ -41,9 +41,9 @@ void parse_arguments(command *nextCommand, char *tempStr){
 		nextCommand->argc++;
 		token = strtok(NULL, " ");
 	}
-		
-	for(int i=0; i<nextCommand->argc; i++)	
-		printf("%s \n", nextCommand->argv[i]);
+
+	for(int i=0; i<nextCommand->argc+1; i++)	
+		printf("-%s- \n", nextCommand->argv[i]);
 	free(token);
 }
 
@@ -81,9 +81,12 @@ int main(void){
 	while(!exitBool){
 		clear_buffers(&nextCommand);
 		update_CWD(CWD);
-       		printf("cmd:%s ", CWD);
+       		printf("cmd:%s>> ", CWD);
 		fgets(tempStr, (nbytes+1), stdin);
-		parse_arguments(&nextCommand, tempStr);	
+        tempStr[strlen(tempStr)-1] = '\0'; // remove the carriage return from the input
+		parse_arguments(&nextCommand, tempStr);
+
+        runCommand(&nextCommand);	
 	}
 	
 	free(tempStr);
@@ -95,3 +98,29 @@ int main(void){
 
 	return 0;
 }
+
+
+int runCommand(command * nextCommand)
+{
+    pid_t pid;
+    //testing execvp
+    pid = fork();
+    if(pid == 0){ //child Process - run program
+	    printf("****I am in the child Process, with ID %d*****\n",pid);
+        nextCommand->argv[nextCommand->argc] = '\0'; // force next argv to NULL char
+        printf("name:--%s--\nargv[0]:--%s--\nargv[1]:--%s--\nargv[2]:--%s--\n",nextCommand->name,nextCommand->argv[0],nextCommand->argv[1],nextCommand->argv[2]);
+
+        execvp(nextCommand->name, nextCommand->argv); 
+        perror("execvp failed to run nextCommand with execvp");	 //program should never reach this line, as execvp should stray this thread   
+    }
+	else if(pid > 0){ //Parent Process 
+        wait((int*)0);
+		printf("I have forked, and am the parent with ID %d\n",pid);
+	}
+    else{
+        printf("error, child was not created properly\n");
+    }
+
+    return 1;
+}
+
