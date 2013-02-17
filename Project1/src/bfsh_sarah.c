@@ -26,13 +26,14 @@ void cd_Command(char* argument){
 
 	if (strncmp(argument, "..", 2) == 0) {
 		printf("../.. chosen\n");
-		while (strncmp(argument+3*i, "..", 2) == 0 && strncmp(argument+3*i+2, "/", 1) == 0) {
+		while (strncmp(argument+3*i, "../", 3) == 0 || strncmp(argument+3*i, "..", 3) == 0) {
 			count++;
 			i++;
 		}
-		if(strncmp(argument+3*i, "..", 2) == 0) {
-			count++;		
+		if (!(strncmp(argument+3*i, "..", 3) == 0 || strncmp(argument+3*i, "", 3) == 0)) {
+			count = 0;
 		}
+		printf ("%i\n", count);
 		i = strlen(cwd);
 		do {
 			if (cwd[i-1] == '/') {			
@@ -53,10 +54,8 @@ void cd_Command(char* argument){
 		}
 		strncpy (tmpstring, argument+count, strlen(argument)-count);
 		if (chdir(homeDirectory) == 0) {
-			if (chdir(tmpstring) == 0) {
-			} else {
-				printf("Failure\n");
-			}
+			if (strlen(tmpstring) > 0 && chdir(tmpstring) == 0) {
+			} 
 		} else {
 			printf("Failure\n");
 		}
