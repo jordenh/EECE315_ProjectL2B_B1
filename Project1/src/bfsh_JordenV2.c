@@ -271,7 +271,7 @@ void cd_Command(char* argument){
 	    if(DEBUG==1){
     		printf("../.. chosen\n");
 		}
-		while (strncmp(argument+3*i, "../", 3) == 0 || strncmp(argument+3*i, "..\n", 3) == 0) {
+		while (strncmp(argument+3*i, "../", 3) == 0 || strncmp(argument+3*i, "..", 3) == 0) {
 			count++;
 			i++;
 		}
