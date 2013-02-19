@@ -268,27 +268,33 @@ void cd_Command(char* argument){
 	getcwd(cwd, BUFFER);	
 
 	if (strncmp(argument, "..", 2) == 0) {
-	    if(DEBUG==1){
-    		printf("../.. chosen\n");
+		if(DEBUG==1){
+	    		printf("../.. chosen\n");
 		}
-		while (strncmp(argument+3*i, "../", 3) == 0 || strncmp(argument+3*i, "..\n", 3) == 0) {
+		while (strncmp(argument+3*i, "../", 3) == 0 || strncmp(argument+3*i, "..", 3) == 0) {
 			count++;
 			i++;
 		}
-		if (!(strncmp(argument+3*i, "..", 3) == 0 || strncmp(argument+3*i, "", 3) == 0)) {
+		if(DEBUG==1){
+		    printf ("%i : %i :", strlen(argument), count);
+		}
+		if (strlen(argument) > 3*i) {
 			count = 0;
 		}
 		if(DEBUG==1){
 		    printf ("%i\n", count);
 		}
 		i = strlen(cwd);
-		do {
+		while (count > 0) {
 			if (cwd[i-1] == '/') {			
 				count--;
 			}
 			cwd[i-1] = '\0';
 			i--;
-		} while(count > 0);
+			if(DEBUG==1){
+	    			printf("%i:%i:%s\n", count, i, cwd);
+			}
+		}
 		if(cwd[0] == '\0') {
 			chdir("/");
 		} else {
