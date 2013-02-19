@@ -21,10 +21,25 @@ void update_CWD(char* cwd) {
 	getcwd(cwd, BUFFER);
 	homeDirectory = getenv("HOME");
 
-	if(memcmp(cwd, homeDirectory, sizeof(homeDirectory)) == 0) {
-		cwd[2*(sizeof(homeDirectory)-2)] = '~';
-		for (int i=0;i<BUFFER - 2*(sizeof(homeDirectory)-2);i++) {
-			cwd[i] = cwd[i + 2*(sizeof(homeDirectory)-2)];
+	if (DEBUG==1){
+		printf ("%s : %s \n", cwd, homeDirectory);
+	}
+
+	if (strncmp(cwd, homeDirectory, strlen(homeDirectory)) == 0) {
+		if(strlen(cwd) == strlen(homeDirectory)) {
+			cwd[0] = '~';
+			cwd[1] = '\0';
+		} else {		
+			cwd[strlen(homeDirectory)-1] = '~';
+			if (DEBUG==1){
+				printf ("%s\n", cwd);
+			}
+			for (int i=0;i<BUFFER - strlen(homeDirectory) -2;i++) {
+				cwd[i] = cwd[i + strlen(homeDirectory)-1];
+			}
+			if (DEBUG==1){
+				printf ("%s\n", cwd);
+			}
 		}
 	}
 
@@ -250,7 +265,7 @@ void cd_Command(char* argument){
 			i++;
 		}
 		if(DEBUG==1){
-		    printf ("%i : %i :", strlen(argument), count);
+		    printf ("%i : %i :", (int)strlen(argument), count);
 		}
 		if (strlen(argument) > 3*i) {
 			count = 0;
