@@ -4,13 +4,17 @@
 #include<unistd.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <sys/stat.h>
 #include "bfsh.h"
 #include "parser.h"
 
 #define BUFFER 300
 #define TRUE 1
 #define FALSE 0
-static int DEBUG = 0; //1=on,0=off
+static int MAXNUMBACKGROUNDPROCS = 10;
+static int DEBUG = 1; //1=on,0=off
+static int numProcessInBack = 0;
+static int processIDsInBack[10] = {-2,-2,-2,-2,-2,-2,-2,-2,-2,-2}; //initialize all with -2, as that will be the "not active process ID" slot indicator
 
 int runCommand(command * nextCommand);
 void cd_Command(char* argument);
@@ -32,13 +36,13 @@ void update_CWD(char* cwd) {
 		} else {		
 			cwd[strlen(homeDirectory)-1] = '~';
 			if (DEBUG==1){
-				printf ("%s\n", cwd);
+				//printf ("%s\n", cwd);
 			}
 			for (int i=0;i<BUFFER - strlen(homeDirectory) -2;i++) {
 				cwd[i] = cwd[i + strlen(homeDirectory)-1];
 			}
 			if (DEBUG==1){
-				printf ("%s\n", cwd);
+				//printf ("%s\n", cwd);
 			}
 		}
 	}
@@ -83,7 +87,7 @@ int main(void){
 			cd_Command(nextCommand.argv[1]);
 		} else if (strcasecmp(nextCommand.name, "q") == 0 || strcasecmp(nextCommand.name, "quit") == 0) {
 			exitBool = 1;
-		} else {  // execute program
+		} else if (nextCommand.name[0] != '\0') {  // execute program if there is a command to run
 			runCommand(&nextCommand);
 		}
 	}
@@ -101,33 +105,13 @@ int main(void){
 
 int runCommand(command * nextCommand)
 {
+    if(nextCommand->name[0] == '\0' || nextCommand->argv[0][0] == '\0'){
+        //no proper command to execute
+        return 0;
+    }
+    
     
     pid_t pid;
-    
-    
-    //testing execvp
-/*    pid = fork();
-    if(pid == 0){ //child Process - run program
-	    printf("****I am in the child Process, with ID %d*****\n",pid);
-	    free(nextCommand->argv[nextCommand->argc]); // Free child's memory at this location, before it gets changed.
-        nextCommand->argv[nextCommand->argc] = '\0'; // force next argv to NULL char, on Child
-        printf("name:--%s--\nargv[0]:--%s--\nargv[1]:--%s--\nargv[2]:--%s--\n",nextCommand->name,nextCommand->argv[0],nextCommand->argv[1],nextCommand->argv[2]);
-
-        execvp(nextCommand->name, nextCommand->argv); 
-        perror("execvp failed to run nextCommand with execvp");	 //program should never reach this line, as execvp should stray this thread  
-        return -1; 
-    }
-	else if(pid > 0){ //Parent Process 
-        wait((int*)0);
-		printf("I have forked, and am the parent with ID %d\n",pid);
-	}
-    else{
-        printf("error, child was not created properly\n");
-    } */
-
-
-    char* tempCWD = (char*)malloc(BUFFER+1);
-    getcwd(tempCWD,BUFFER+1);
     
     char* pathStrings[25];
     for(int i=0;i<25;i++){
@@ -147,103 +131,116 @@ int runCommand(command * nextCommand)
 	    numPathVars++;
 		token = strtok(NULL, ":");
 	}
+	free(token);
 	//NOTE: numPathVars is 1 too high, so on last pass of fork, rather than searching a Path location, search CWD.
-
+    
     char* concatenatedAbsPath = (char*)malloc(BUFFER);
-    unsigned int boolExecutedProg = 0;
-    for(int i=numPathVars;i>=0;i--){
-        strcpy(concatenatedAbsPath,pathStrings[i]);
-        int startIndexPathString = strlen(pathStrings[i]);
-        concatenatedAbsPath[startIndexPathString] = '/';
-        strcpy(&(concatenatedAbsPath[startIndexPathString + 1]) ,nextCommand->name);
+    int status;
+	pid = fork();
+	if(strncmp(nextCommand->argv[(nextCommand->argc)-1], "&", 1) == 0) {//background process
+	    processIDsInBack[numProcessInBack] = pid; 
+	    numProcessInBack++;
+	    printf("[%d] %d\n",numProcessInBack, pid);
+	}
+	
+	if(pid == 0) {
+	    if(strncmp(nextCommand->argv[(nextCommand->argc)-1], "&", 1) == 0) {//background process
+	        if(numProcessInBack==MAXNUMBACKGROUNDPROCS){
+	            printf("Error: cannot create more than %d background processes\n", MAXNUMBACKGROUNDPROCS);
+	            abort();
+	        }
+	        
+	        free(nextCommand->argv[(nextCommand->argc)-1]); // Free child's memory at this location, before it gets changed.
+            nextCommand->argv[(nextCommand->argc)-1] = '\0'; // force "&" argv to NULL char, on Child 
+	    }
+	
+		unsigned int foundProgramBool = 0;
+		for(int i=numPathVars;i>=0;i--){  //search through different directories to discover which one has the desired program
+			strcpy(concatenatedAbsPath,pathStrings[i]);
+			int startIndexPathString = strlen(pathStrings[i]);
+			concatenatedAbsPath[startIndexPathString] = '/';
+			strcpy(&(concatenatedAbsPath[startIndexPathString + 1]) ,nextCommand->name);
+			
+			if(i==numPathVars){
+				strcpy(&concatenatedAbsPath[0],nextCommand->name); //search CWD, since this index holds no path information      
+			} 
+			if(DEBUG==1){
+				printf("concatenatedAbsPath = --%s--\n",concatenatedAbsPath);
+			}
+			
+			struct stat tempBuf; //temporary buffer, so that "stat" will have enough args
+			if(stat(concatenatedAbsPath, &tempBuf) >= 0){ //returns non-negative if program is found
+				if(DEBUG == 1){
+					printf("the program was found in path = --%s--\n",concatenatedAbsPath);
+				}
+				foundProgramBool = 1;
+				break;
+			}
+		}
+		
+		if(foundProgramBool == 0){
+			printf("%s: Command not found.\n", nextCommand->name);
+			abort();
+		}
+		
         if(DEBUG==1){
-            //printf("concatenatedAbsPath = --%s--\n",concatenatedAbsPath);
+            printf("***Attempting to use execv, in %s***\n",concatenatedAbsPath);
         }
-        
-        int status;
-        pid = fork();
-        if(pid == 0) {
-            if(i==numPathVars){  //search CWD, since this index holds no path information
-                strcpy(&concatenatedAbsPath[0],nextCommand->name);                
-            }  
-            if(DEBUG==1){
-                printf("***Attempting to use execv, in %s***\n",concatenatedAbsPath);
-            }
-            free(nextCommand->argv[nextCommand->argc]); // Free child's memory at this location, before it gets changed.
-            nextCommand->argv[nextCommand->argc] = '\0'; // force next argv to NULL char, on Child 
-         
-            execv(concatenatedAbsPath,nextCommand->argv);
-        
-            perror("execv failed to run\n");
-            //return -1;  //end child process, return with -1.  
+        free(nextCommand->argv[nextCommand->argc]); // Free child's memory at this location, before it gets changed.
+        nextCommand->argv[nextCommand->argc] = '\0'; // force next argv to NULL char, on Child 
+     
+        if(execv(concatenatedAbsPath,nextCommand->argv) == -1){
+            printf("ERROR, program did not execute properly: aborting.\n");                  
             abort();
-              
         }
-        else if(pid > 0) { //Parent Process
+        
+        return -1; //should never hit this line
+    }
+    else if(pid > 0) { //Parent Process     
+        if(strncmp(nextCommand->argv[(nextCommand->argc)-1], "&", 1) != 0) {//foreground process
             wait(&status);
             if(DEBUG==1){
                 printf("status=%d , pid=%d\n",status,pid);
             }
-            if (status == pid){//child was successful
-                boolExecutedProg = 1;
-                if(DEBUG==1){
-                    printf("I am in the status==pid branch\n");
-                }
-            }
-            else if (status == -1){//child Unsuccessful
-                boolExecutedProg = 0;
-                if(DEBUG==1){
-                    printf("I am in the status==-1 branch\n");
-                }
-            }
-            else if (status==0){
-                break; //this seemed to be what was returned when ls was found. . exploring further
-            }
-            else{
-               if(DEBUG==1){
-                //printf("I dont think it can get to this line\n");
-                }
-            }
-        }
-        else{
-            printf("error, child was not created properly\n");
-        }    
-    }
-    
-    
-    
-    
-/*    //testing execv
-    pid = fork();
-    if(pid == 0) {
-        printf("\n***Attempting to use execv***\n");
-        free(nextCommand->argv[nextCommand->argc]); // Free child's memory at this location, before it gets changed.
-        nextCommand->argv[nextCommand->argc] = '\0'; // force next argv to NULL char, on Child
-  
-//       char* av1[] = {"/bin/ls", tempCWD, "\0"};
-//       execv("/bin/ls", av1);   
-         
-        execv(nextCommand->name,nextCommand->argv);
+        }  
         
-        perror("execv failed to run nextCommand with execv");
-        return -1;        
-    }
-    else if(pid > 0) { //Parent Process
-        wait((int*)0);
-        printf("I am the parent for my execv test\n");
-
+        if (numProcessInBack > 0){
+            for(int processCount =0; processCount<10; processCount++){
+                if(processIDsInBack[processCount] != -2){ //it's a valid ID
+                    if(waitpid(processIDsInBack[processCount], &status, WNOHANG) == 0){
+                        //process still running
+                    }
+                    else{
+                        //process finished
+                        numProcessInBack--;
+                        printf("[%d]\tDone\t\t\t%d\n",processCount,processIDsInBack[processCount]);
+                        processIDsInBack[processCount] = -2; //set back to invalid process ID
+                    }
+                
+                }
+            }
+        
+        }
+        
     }
     else{
-        printf("error, child was not created properly\n");
+        printf("error, foreground child was not created properly\n");
+    } 
+    
+    if (DEBUG ==1 && numProcessInBack > 0){
+        printf("numProcessInBack= %d\n",numProcessInBack);
+        for(int processCount =0; processCount<10; processCount++){
+           printf("processIDsInBack[%d]= %d\n",processCount, processIDsInBack[processCount]); 
+        }
     }
-*/
-
-
-    free(tempCWD);
+    
     free(concatenatedAbsPath);
-    printf("\n\n"); 
+    for(int i=0;i<25;i++){
+        free(pathStrings[i]);
+    }
+    free(pathString);
 
-    return 1;
+    return 0;
 }
 
 
