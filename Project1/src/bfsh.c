@@ -4,42 +4,16 @@
 #include<unistd.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include "bfsh.h"
+#include "parser.h"
 
 #define BUFFER 300
 #define TRUE 1
 #define FALSE 0
 static int DEBUG = 0; //1=on,0=off
 
-typedef struct command_t {
-    int argc;
-    char* name;
-    char* argv[99]; //name is repeated in argv[0]
-} command;
-
 int runCommand(command * nextCommand);
 void cd_Command(char* argument);
-
-void parse_arguments(command *nextCommand, char *tempStr){
-	char* token = (char*)malloc(BUFFER+1);
-	
-	token = strtok(tempStr, " ");
-	while(token){
-		if(nextCommand->argc == 0){
-			strcpy(nextCommand->name, token);
-			strcpy(nextCommand->argv[nextCommand->argc], token);
-		}
-		else
-			strcpy(nextCommand->argv[nextCommand->argc], token);
-		
-		nextCommand->argc++;
-		token = strtok(NULL, " ");
-	}
-    if(DEBUG==1){
-    	for(int i=0; i<nextCommand->argc+1; i++)	
-	    	printf("-%s- \n", nextCommand->argv[i]);
-	}
-	free(token);
-}
 
 void update_CWD(char* cwd) {
 	
