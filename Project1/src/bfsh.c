@@ -12,7 +12,7 @@
 #define TRUE 1
 #define FALSE 0
 static int MAXNUMBACKGROUNDPROCS = 10;
-static int DEBUG = 1; //1=on,0=off
+static int DEBUG = 0; //1=on,0=off
 static int numProcessInBack = 0;
 static int processIDsInBack[10] = {-2,-2,-2,-2,-2,-2,-2,-2,-2,-2}; //initialize all with -2, as that will be the "not active process ID" slot indicator
 
@@ -105,11 +105,10 @@ int main(void){
 
 int runCommand(command * nextCommand)
 {
-    if(nextCommand->name[0] == '\0' || nextCommand->argv[0][0] == '\0'){
+    if(nextCommand->name[0] == '\0' || nextCommand->argv[0] == '\0'){
         //no proper command to execute
         return 0;
     }
-    
     
     pid_t pid;
     
@@ -137,11 +136,7 @@ int runCommand(command * nextCommand)
     char* concatenatedAbsPath = (char*)malloc(BUFFER);
     int status;
 	pid = fork();
-	if(strncmp(nextCommand->argv[(nextCommand->argc)-1], "&", 1) == 0) {//background process
-	    processIDsInBack[numProcessInBack] = pid; 
-	    numProcessInBack++;
-	    printf("[%d] %d\n",numProcessInBack, pid);
-	}
+	
 	
 	if(pid == 0) {
 	    if(strncmp(nextCommand->argv[(nextCommand->argc)-1], "&", 1) == 0) {//background process
@@ -197,8 +192,13 @@ int runCommand(command * nextCommand)
         return -1; //should never hit this line
     }
     else if(pid > 0) { //Parent Process     
-        if(strncmp(nextCommand->argv[(nextCommand->argc)-1], "&", 1) != 0) {//foreground process
-            wait(&status);
+        if(strncmp(nextCommand->argv[(nextCommand->argc)-1], "&", 1) == 0) {//background process
+	        processIDsInBack[numProcessInBack] = pid; 
+	        numProcessInBack++;
+	        printf("[%d] %d\n",numProcessInBack, pid);
+	    }
+        else{//foreground process
+            waitpid(pid,&status,0); // hold for child that was just spawned
             if(DEBUG==1){
                 printf("status=%d , pid=%d\n",status,pid);
             }
