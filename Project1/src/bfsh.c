@@ -105,11 +105,10 @@ int main(void){
 
 int runCommand(command * nextCommand)
 {
-    if(nextCommand->name[0] == '\0' || nextCommand->argv[0] == '\0'){
-        //no proper command to execute
+    if(nextCommand->name[0] == '\0' || nextCommand->argv[0][0] == '\0'){
         return 0;
     }
-    
+
     pid_t pid;
     
     char* pathStrings[25];
@@ -136,7 +135,6 @@ int runCommand(command * nextCommand)
     char* concatenatedAbsPath = (char*)malloc(BUFFER);
     int status;
 	pid = fork();
-	
 	
 	if(pid == 0) {
 	    if(strncmp(nextCommand->argv[(nextCommand->argc)-1], "&", 1) == 0) {//background process
@@ -193,9 +191,17 @@ int runCommand(command * nextCommand)
     }
     else if(pid > 0) { //Parent Process     
         if(strncmp(nextCommand->argv[(nextCommand->argc)-1], "&", 1) == 0) {//background process
-	        processIDsInBack[numProcessInBack] = pid; 
-	        numProcessInBack++;
-	        printf("[%d] %d\n",numProcessInBack, pid);
+            if(numProcessInBack!=MAXNUMBACKGROUNDPROCS){// dont index process ID if there are already MANUMBACKGROUNDPROCS created
+	            for(int processCount =0; processCount<10; processCount++){//find first free slot (-2) in processIDsInBack
+	                if(processIDsInBack[processCount] == -2){
+	                    processIDsInBack[processCount] = pid; 
+	                    numProcessInBack++;
+	                    printf("[%d] %d\n",processCount+1, pid);   
+	                    break;
+	                }
+	            }   
+	        }
+	        
 	    }
         else{//foreground process
             waitpid(pid,&status,0); // hold for child that was just spawned
@@ -207,14 +213,21 @@ int runCommand(command * nextCommand)
         if (numProcessInBack > 0){
             for(int processCount =0; processCount<10; processCount++){
                 if(processIDsInBack[processCount] != -2){ //it's a valid ID
-                    if(waitpid(processIDsInBack[processCount], &status, WNOHANG) == 0){
+                    if(waitpid(processIDsInBack[processCount], &status, WNOHANG) == processIDsInBack[processCount]){
+                        //process finished
+                        printf("[%d]\tDone\t\t\t%d\n",processCount+1,processIDsInBack[processCount]);
+                        numProcessInBack--;
+                        processIDsInBack[processCount] = -2; //set back to invalid process ID
+                    }
+                    else if(waitpid(processIDsInBack[processCount], &status, WNOHANG) == -1){
+                        printf("Error has occured in waitPID - research further\n");
+                    }
+                    else if(waitpid(processIDsInBack[processCount], &status, WNOHANG) == 0){
                         //process still running
                     }
                     else{
-                        //process finished
-                        numProcessInBack--;
-                        printf("[%d]\tDone\t\t\t%d\n",processCount,processIDsInBack[processCount]);
-                        processIDsInBack[processCount] = -2; //set back to invalid process ID
+                        //process changed state in some other way
+                        printf("[%d]\tChangedState\t%d\n",processCount+1,processIDsInBack[processCount]);
                     }
                 
                 }
