@@ -38,7 +38,6 @@ int main(void){
 
 	while(!exitBool){
 		nextCommand.argc = 0;
-		nextCommand.name[0] = '\0'; // ensure name doesnt repeat, to stop incorrect cd calls
 		update_CWD(CWD);
        	
 		gethostname(hostname, BUFFER);

@@ -32,6 +32,9 @@ void parse_arguments(command *nextCommand, char *tempString){
 				strcpy(nextCommand->argv[j], buffer);
 				nextCommand->argc++;
 			}
+			else if(j == 0){
+				strcpy(nextCommand->argv[0],"\0");
+			}
 
 			strcpy(nextCommand->name, nextCommand->argv[0]);
 			break;
@@ -41,6 +44,6 @@ void parse_arguments(command *nextCommand, char *tempString){
 			previous_char_is_alphanum = 1;
 		}	
 
-		tempString++;		
+		tempString++;
 	}
 }
