@@ -72,10 +72,6 @@ int main(void){
 
 int runCommand(command * nextCommand)
 {
-    if(nextCommand->name[0] == '\0' || nextCommand->argv[0][0] == '\0'){
-        return 0;
-    }
-
     pid_t pid;
     
     char* pathStrings[25];
