@@ -7,6 +7,7 @@
 #include <sys/stat.h>
 #include "bfsh.h"
 #include "parser.h"
+#include "directory.h"
 
 #define BUFFER 300
 #define TRUE 1
@@ -17,38 +18,6 @@ static int numProcessInBack = 0;
 static int processIDsInBack[10] = {-2,-2,-2,-2,-2,-2,-2,-2,-2,-2}; //initialize all with -2, as that will be the "not active process ID" slot indicator
 
 int runCommand(command * nextCommand);
-void cd_Command(char* argument);
-
-void update_CWD(char* cwd) {
-	
-	char* homeDirectory;
-	getcwd(cwd, BUFFER);
-	homeDirectory = getenv("HOME");
-
-	if (DEBUG==1){
-		printf ("%s : %s \n", cwd, homeDirectory);
-	}
-
-	if (strncmp(cwd, homeDirectory, strlen(homeDirectory)) == 0) {
-		if(strlen(cwd) == strlen(homeDirectory)) {
-			cwd[0] = '~';
-			cwd[1] = '\0';
-		} else {		
-			cwd[strlen(homeDirectory)-1] = '~';
-			if (DEBUG==1){
-				//printf ("%s\n", cwd);
-			}
-			for (int i=0;i<BUFFER - strlen(homeDirectory) -2;i++) {
-				cwd[i] = cwd[i + strlen(homeDirectory)-1];
-			}
-			if (DEBUG==1){
-				//printf ("%s\n", cwd);
-			}
-		}
-	}
-
-	return;
-}
 
 int main(void){
 	int exitBool = FALSE;
@@ -74,10 +43,10 @@ int main(void){
        	
 		gethostname(hostname, BUFFER);
 		user = getenv("USER");
-       	printf("[%s@%s %s]$ ", user, hostname, CWD);
+       		printf("[%s@%s %s]$ ", user, hostname, CWD);
 		
 		fgets(tempStr, (nbytes+1), stdin);
-        tempStr[strlen(tempStr)-1] = '\0'; // remove the carriage return from the input
+        	tempStr[strlen(tempStr)-1] = '\0'; // remove the carriage return from the input
 		parse_arguments(&nextCommand, tempStr);
 		
 		if (strcasecmp(nextCommand.name, "cd") == 0) {
@@ -242,68 +211,3 @@ int runCommand(command * nextCommand)
 
     return 0;
 }
-
-
-void cd_Command(char* argument){
-	char* homeDirectory;
-	char cwd[BUFFER];
-	char tmpstring[300];
-	int i = 0;
-	int count = 0;
-	homeDirectory = getenv("HOME");
-	getcwd(cwd, BUFFER);	
-
-	if (strncmp(argument, "..", 2) == 0) {
-		if(DEBUG==1){
-	    		printf("../.. chosen\n");
-		}
-		while (strncmp(argument+3*i, "../", 3) == 0 || strncmp(argument+3*i, "..", 3) == 0) {
-			count++;
-			i++;
-		}
-		if(DEBUG==1){
-		    printf ("%i : %i :", (int)strlen(argument), count);
-		}
-		if (strlen(argument) > 3*i) {
-			count = 0;
-		}
-		if(DEBUG==1){
-		    printf ("%i\n", count);
-		}
-		i = strlen(cwd);
-		while (count > 0) {
-			if (cwd[i-1] == '/') {			
-				count--;
-			}
-			cwd[i-1] = '\0';
-			i--;
-			if(DEBUG==1){
-	    			printf("%i:%i:%s\n", count, i, cwd);
-			}
-		}
-		if(cwd[0] == '\0') {
-			chdir("/");
-		} else {
-			chdir(cwd);	
-		}
-			
-	} else if (strncmp(argument, "~", 1) == 0) {
-		while (strncmp(argument+count, "~", 1) == 0 || strncmp(argument+count, "/", 1) == 0) {
-			count++;
-		}
-		strncpy (tmpstring, argument+count, strlen(argument)-count);
-		if (chdir(homeDirectory) == 0) {
-			if (strlen(tmpstring) > 0 && chdir(tmpstring) == 0) {
-			} 
-		} else {
-			printf("Failure\n");
-		}
-	} else {	
-		if (chdir(argument) == 1) {
-			printf("Failure\n");
-		}
-	}
-	homeDirectory = NULL;
-	return;
-}
-
