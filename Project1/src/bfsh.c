@@ -13,6 +13,7 @@ static int DEBUG = 0;
 int main(void){
 	int exitBool = FALSE;
 	int nbytes = BUFFER;
+	int command_count = 0;
 	char *cwd = (char*)malloc(nbytes+1);
 	char *tempStr = (char*)malloc(nbytes+1);
 	char CWD[BUFFER];
@@ -33,7 +34,7 @@ int main(void){
        	
 		gethostname(hostname, BUFFER);
 		user = getenv("USER");
-       		printf("[%s@%s %s]$ ", user, hostname, CWD);
+       		printf("[%d][%s@%s %s]$ ", command_count, user, hostname, CWD);
 		
 		fgets(tempStr, (nbytes+1), stdin);
         	tempStr[strlen(tempStr)-1] = '\0'; // remove the carriage return from the input
@@ -64,6 +65,7 @@ int main(void){
 		} else if (nextCommand.name[0] != '\0') {  // execute program if there is a command to run
 			runCommand(&nextCommand);
 		}
+		command_count++;
 	}
 	
 	free(tempStr);
