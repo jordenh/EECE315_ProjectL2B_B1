@@ -71,7 +71,6 @@ int main(void){
 	return 0;
 }
 
-
 int runCommand(command * nextCommand)
 {
     if(nextCommand->name[0] == '\0' || nextCommand->argv[0][0] == '\0'){
