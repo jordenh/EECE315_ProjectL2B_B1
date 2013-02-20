@@ -27,10 +27,13 @@ void parse_arguments(command *nextCommand, char *tempString){
 			found_quotes = ~(found_quotes);
 		}
 		else if(*tempString == '\0'){
-			if(previous_char_is_alphanum){
+			if(found_quotes){
+				printf("unmatched \"\n");
+				strcpy(nextCommand->argv[0], "\0");
+			}
+			else if(previous_char_is_alphanum){
 				buffer[i] = '\0';
 				strcpy(nextCommand->argv[j], buffer);
-				nextCommand->argc++;
 			}
 			else if(j == 0){
 				strcpy(nextCommand->argv[0],"\0");

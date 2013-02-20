@@ -100,14 +100,14 @@ int runCommand(command * nextCommand)
 	pid = fork();
 	
 	if(pid == 0) {
-	    if(strncmp(nextCommand->argv[(nextCommand->argc)-1], "&", 1) == 0) {//background process
+	    if(strncmp(nextCommand->argv[(nextCommand->argc)], "&", 1) == 0) {//background process
 	        if(numProcessInBack==MAXNUMBACKGROUNDPROCS){
 	            printf("Error: cannot create more than %d background processes\n", MAXNUMBACKGROUNDPROCS);
 	            abort();
 	        }
 	        
-	        free(nextCommand->argv[(nextCommand->argc)-1]); // Free child's memory at this location, before it gets changed.
-            nextCommand->argv[(nextCommand->argc)-1] = '\0'; // force "&" argv to NULL char, on Child 
+	        free(nextCommand->argv[(nextCommand->argc)]); // Free child's memory at this location, before it gets changed.
+		nextCommand->argv[(nextCommand->argc)] = '\0'; // force "&" argv to NULL char, on Child 
 	    }
 	
 		unsigned int foundProgramBool = 0;
@@ -142,8 +142,8 @@ int runCommand(command * nextCommand)
         if(DEBUG==1){
             printf("***Attempting to use execv, in %s***\n",concatenatedAbsPath);
         }
-        free(nextCommand->argv[nextCommand->argc]); // Free child's memory at this location, before it gets changed.
-        nextCommand->argv[nextCommand->argc] = '\0'; // force next argv to NULL char, on Child 
+        free(nextCommand->argv[nextCommand->argc + 1]); // Free child's memory at this location, before it gets changed.
+        nextCommand->argv[nextCommand->argc + 1] = '\0'; // force next argv to NULL char, on Child 
      
         if(execv(concatenatedAbsPath,nextCommand->argv) == -1){
             printf("ERROR, program did not execute properly: aborting.\n");                  
@@ -153,7 +153,7 @@ int runCommand(command * nextCommand)
         return -1; //should never hit this line
     }
     else if(pid > 0) { //Parent Process     
-        if(strncmp(nextCommand->argv[(nextCommand->argc)-1], "&", 1) == 0) {//background process
+        if(strncmp(nextCommand->argv[(nextCommand->argc)], "&", 1) == 0) {//background process
             if(numProcessInBack!=MAXNUMBACKGROUNDPROCS){// dont index process ID if there are already MANUMBACKGROUNDPROCS created
 	            for(int processCount =0; processCount<10; processCount++){//find first free slot (-2) in processIDsInBack
 	                if(processIDsInBack[processCount] == -2){
