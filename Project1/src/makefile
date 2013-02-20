@@ -11,7 +11,9 @@ parser.o: parser.c parser.h bfsh.h
 	$(CC) $(CFLAGS) -c parser.c
 directory.o: directory.c directory.h bfsh.h
 	$(CC) $(CFLAGS) -c directory.c
-
+runCommand.o: runCommand.c runCommand.h bfsh.h
+	$(CC) $(CFLAGS) -c runCommand.c
+	
 clean:
-	rm -rf *o bfsh
+	rm -f *o bfsh
 
