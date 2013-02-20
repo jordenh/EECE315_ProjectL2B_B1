@@ -8,11 +8,6 @@
 #include "bfsh.h"
 #include "directory.h"
 
-#define BUFFER 300
-#define TRUE 1
-#define FALSE 0
-static int DEBUG = 0; //1=on,0=off
-
 void update_CWD(char* cwd) {
 	
 	char* homeDirectory;
@@ -45,6 +40,7 @@ void update_CWD(char* cwd) {
 }
 
 void cd_Command(char* argument){
+	
 	char* homeDirectory;
 	char cwd[BUFFER];
 	char tmpstring[300];

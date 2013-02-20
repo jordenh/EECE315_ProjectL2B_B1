@@ -3,8 +3,8 @@ CFLAGS=-g -Wall -std=gnu99
 
 all: bfsh
 	@rm -f *.o
-bfsh: bfsh.o parser.o directory.o
-	$(CC) -o bfsh bfsh.o parser.o directory.o
+bfsh: bfsh.o parser.o directory.o runCommand.o
+	$(CC) -o bfsh bfsh.o parser.o directory.o runCommand.o
 bfsh.o: bfsh.c bfsh.h parser.h directory.h
 	$(CC) $(CFLAGS) -c bfsh.c
 parser.o: parser.c parser.h bfsh.h

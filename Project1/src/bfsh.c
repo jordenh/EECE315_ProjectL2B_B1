@@ -1,15 +1,11 @@
+#include<stdio.h>
+#include<stdlib.h>
+#include<unistd.h>
+#include<string.h>
 #include "bfsh.h"
 #include "parser.h"
 #include "directory.h"
-
-#define BUFFER 300
-#define TRUE 1
-#define FALSE 0
-static int MAXNUMBACKGROUNDPROCS = 10;
-static int DEBUG = 0; //1=on,0=off
-static int numProcessInBack = 0;
-static int processIDsInBack[10] = {-2,-2,-2,-2,-2,-2,-2,-2,-2,-2}; //initialize all with -2, as that will be the "not active process ID" slot indicator
-static char* processNamesInBack[10];
+#include "runCommand.h"
 
 int main(void){
 	int exitBool = FALSE;
