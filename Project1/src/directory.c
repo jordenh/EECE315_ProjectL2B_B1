@@ -40,12 +40,12 @@ void update_CWD(char* cwd) {
 }
 
 void cd_Command(char* argument){
-	
 	char* homeDirectory;
 	char cwd[BUFFER];
 	char tmpstring[300];
 	int i = 0;
-	int count = 0;
+	int count1 = 0;
+	int count2 = 0;
 	homeDirectory = getenv("HOME");
 	getcwd(cwd, BUFFER);	
 
@@ -53,41 +53,75 @@ void cd_Command(char* argument){
 		if(DEBUG==1){
 	    		printf("../.. chosen\n");
 		}
-		while (strncmp(argument+3*i, "../", 3) == 0 || strncmp(argument+3*i, "..", 3) == 0) {
-			count++;
+		while (strncmp(argument+3*i, "../", 3) == 0) {
+			count1++;
 			i++;
 		}
 		if(DEBUG==1){
-		    printf ("%i : %i :", (int)strlen(argument), count);
+		    printf ("%i ../ found ", count1);
 		}
-		if (strlen(argument) > 3*i) {
-			count = 0;
+		if (strncmp(argument+3*i, "..", 3) == 0) {
+			count1++;
+			if(DEBUG==1){
+			    printf (": %i .. found ", count1);
+			}
+		} else {
+			while (strncmp(argument+3*i+count2, "/", 1) == 0) {
+				count2++;
+			}
+			if(DEBUG==1){
+			    printf (": %i char until file ", count2);
+			}
+			if (strncmp (argument+3*i+count2-1, "/", 1) == 0) {
+				strncpy (tmpstring, argument+3*i+count2, strlen(argument)-3*i-count2);
+			} else {
+				count1 = 0;
+			}
+			if(DEBUG==1){
+			    printf (": [%s] found ", tmpstring);
+			}
 		}
+
 		if(DEBUG==1){
-		    printf ("%i\n", count);
+		    printf (": %i\n", count1);
 		}
 		i = strlen(cwd);
-		while (count > 0) {
+		while (count1 > 0 && i > 0) {
 			if (cwd[i-1] == '/') {			
-				count--;
+				count1--;
 			}
 			cwd[i-1] = '\0';
 			i--;
 			if(DEBUG==1){
-	    			printf("%i:%i:%s\n", count, i, cwd);
+	    			printf("%i:%i:%s\n", count1, i, cwd);
 			}
 		}
+		
 		if(cwd[0] == '\0') {
-			chdir("/");
+			if (chdir("/") == 0) {
+				if (chdir(tmpstring) == 0) {
+				} else {
+					printf("Failure\n");
+				}
+			} else {
+				printf("Failure\n");
+			}
 		} else {
-			chdir(cwd);	
+			if (chdir(cwd) == 0) {
+				if (chdir(tmpstring) == 0) {
+				} else {
+					printf("Failure\n");
+				}
+			} else {
+				printf("Failure\n");
+			}	
 		}
 			
 	} else if (strncmp(argument, "~", 1) == 0) {
-		while (strncmp(argument+count, "~", 1) == 0 || strncmp(argument+count, "/", 1) == 0) {
-			count++;
+		while (strncmp(argument+count1, "~", 1) == 0 || strncmp(argument+count1, "/", 1) == 0) {
+			count1++;
 		}
-		strncpy (tmpstring, argument+count, strlen(argument)-count);
+		strncpy (tmpstring, argument+count1, strlen(argument)-count1);
 		if (chdir(homeDirectory) == 0) {
 			if (strlen(tmpstring) > 0 && chdir(tmpstring) == 0) {
 			} 
