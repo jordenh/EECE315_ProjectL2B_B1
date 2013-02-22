@@ -6,6 +6,7 @@
 #include "parser.h"
 #include "directory.h"
 #include "runCommand.h"
+#include "env.h"
 
 static int DEBUG = 0;
 
@@ -43,6 +44,21 @@ int main(void){
 			    printf("CD command selected\n");
 			}
 			cd_Command(nextCommand.argv[1]);
+		} else if (strcasecmp(nextCommand.name, "set") == 0) {
+  			if(DEBUG==1){
+  				printf("set command selected\n");
+			}
+			setenv_Command(nextCommand.argv[1], nextCommand.argv[2]);
+  		} else if (strcasecmp(nextCommand.name, "unset") == 0) {			
+  			if(DEBUG==1){
+  				printf("unset command selected\n");
+  			}
+			unsetenv_Command(nextCommand.argv[1]);
+  		} else if (strcasecmp(nextCommand.name, "get") == 0) {
+  			if(DEBUG==1){
+  				printf("get command selected\n");
+  			}
+			getenv_Command(nextCommand.argv[1]);
 		} else if (strcasecmp(nextCommand.name, "q") == 0 || strcasecmp(nextCommand.name, "quit") == 0) {
 			exitBool = 1;
 		} else if (nextCommand.name[0] != '\0') {  // execute program if there is a command to run
