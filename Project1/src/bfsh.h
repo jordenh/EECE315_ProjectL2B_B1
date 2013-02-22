@@ -1,6 +1,10 @@
 #ifndef BFSH_h
 #define BFSH_h
 
+#define BUFFER 300
+#define TRUE 1
+#define FALSE 0
+
 typedef struct command_t {
     int argc;
     char* name;

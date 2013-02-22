@@ -7,6 +7,8 @@
 #include "directory.h"
 #include "runCommand.h"
 
+static int DEBUG = 0;
+
 int main(void){
 	int exitBool = FALSE;
 	int nbytes = BUFFER;

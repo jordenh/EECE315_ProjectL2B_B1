@@ -13,6 +13,7 @@ static int MAXNUMBACKGROUNDPROCS = 10;
 static int numProcessInBack = 0;
 static int processIDsInBack[10] = {-2,-2,-2,-2,-2,-2,-2,-2,-2,-2}; //initialize all with -2, as that will be the "not active process ID" slot indicator
 static char* processNamesInBack[10];
+static int DEBUG = 0;
 
 int runCommand(command * nextCommand)
 {

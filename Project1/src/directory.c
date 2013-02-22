@@ -8,6 +8,8 @@
 #include "bfsh.h"
 #include "directory.h"
 
+static int DEBUG = 0;
+
 void update_CWD(char* cwd) {
 	
 	char* homeDirectory;
