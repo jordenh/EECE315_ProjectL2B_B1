@@ -78,6 +78,7 @@ void cd_Command(char* argument){
 				strncpy (tmpstring, argument+3*i+count2, strlen(argument)-3*i-count2);
 			} else {
 				count1 = 0;
+				printf("Invalid Format\n");
 			}
 			if(DEBUG==1){
 			    printf (": [%s] found ", tmpstring);
@@ -101,22 +102,20 @@ void cd_Command(char* argument){
 		
 		if(cwd[0] == '\0') {
 			if (chdir("/") == 0) {
-				if (chdir(tmpstring) == 0) {
-				} else {
-					printf("Failure\n");
+				if (strlen(tmpstring) > 0 && chdir(tmpstring) == -1) {
+					printf("Failure: unable to find %s\n", tmpstring);
 				}
 			} else {
 				printf("Failure\n");
 			}
 		} else {
-			if (chdir(cwd) == 0) {
-				if (chdir(tmpstring) == 0) {
-				} else {
-					printf("Failure\n");
-				}
+			if (strlen(cwd) > 0 && chdir(cwd) == -1) {
+				printf("Failure: unable to find %s\n", cwd);
 			} else {
-				printf("Failure\n");
-			}	
+				if (strlen(tmpstring) > 0 && chdir(tmpstring) == -1) {
+					printf("Failure: unable to find %s\n", tmpstring);
+				}	
+			}
 		}
 			
 	} else if (strncmp(argument, "~", 1) == 0) {
@@ -125,14 +124,15 @@ void cd_Command(char* argument){
 		}
 		strncpy (tmpstring, argument+count1, strlen(argument)-count1);
 		if (chdir(homeDirectory) == 0) {
-			if (strlen(tmpstring) > 0 && chdir(tmpstring) == 0) {
-			} 
+			if (strlen(tmpstring) > 0 && chdir(tmpstring) == -1) {
+				printf("Failure: unable to find %s\n", tmpstring);
+			}
 		} else {
-			printf("Failure\n");
+			printf("Failure: unable to find %s\n", homeDirectory);
 		}
 	} else {	
-		if (chdir(argument) == 1) {
-			printf("Failure\n");
+		if (strlen(argument) > 0 && chdir(argument) == -1) {
+			printf("Failure: unable to find %s\n", argument);
 		}
 	}
 	homeDirectory = NULL;
