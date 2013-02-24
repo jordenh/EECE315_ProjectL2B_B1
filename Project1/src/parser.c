@@ -10,7 +10,8 @@ void parse_arguments(command *nextCommand, char *tempString){
 	int found_dollar_char = 0;
 	int found_quotes = 0;
 	char buffer[80];		
-	char *shifted_buffer;
+	char shifted_buffer[80];
+	char *env_value = NULL;
 	
 	while(1){
 		if(*tempString == ' ' && previous_char_is_alphanum){
@@ -18,14 +19,19 @@ void parse_arguments(command *nextCommand, char *tempString){
 				buffer[i] = '\0';
 				if(found_dollar_char){
 					found_dollar_char = 0;
-					shifted_buffer = malloc(strlen(buffer));
-
-					for(int k = 0; k<strlen(buffer); k++)
-						*(shifted_buffer + k) = buffer[k+1];
+					
+					for(int k = 0; k<strlen(buffer); k++){
+						shifted_buffer[k] = buffer[k+1];
+					}
+	
 				
-					shifted_buffer = getenv(shifted_buffer);
-					strcpy(nextCommand->argv[j++], shifted_buffer);
-					free(shifted_buffer);
+					env_value = getenv(shifted_buffer);
+					
+					if(env_value != NULL)
+						strcpy(nextCommand->argv[j++], env_value);
+					else
+						strcpy(nextCommand->argv[j], "\0");
+					
 					previous_char_is_alphanum = 0;
 					nextCommand->argc++;
 					i = 0;
@@ -52,13 +58,17 @@ void parse_arguments(command *nextCommand, char *tempString){
 				buffer[i] = '\0';
 				if(found_dollar_char){
 					found_dollar_char = 0;
-					shifted_buffer = malloc(strlen(buffer));
-
-					for(int k = 0; k<strlen(buffer); k++)
-						*(shifted_buffer + k) = buffer[k+1];
+					
+					for(int k = 0; k<strlen(buffer); k++){
+						shifted_buffer[k] = buffer[k+1];
+					}
+	
 				
-					shifted_buffer = getenv(shifted_buffer);
-					strcpy(nextCommand->argv[j], shifted_buffer);
+					env_value = getenv(shifted_buffer);
+					if( env_value != NULL)
+						strcpy(nextCommand->argv[j], env_value);
+					else
+						strcpy(nextCommand->argv[j], "\0");
 				}
 				else
 					strcpy(nextCommand->argv[j], buffer);
