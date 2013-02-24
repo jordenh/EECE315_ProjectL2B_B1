@@ -60,7 +60,7 @@ int main(void){
   				printf("get command selected\n");
   			}
 			getenv_Command(nextCommand.argv[1]);
-		} else if (strcasecmp(nextCommand.name, "q") == 0 || strcasecmp(nextCommand.name, "quit") == 0) {
+		} else if (strcasecmp(nextCommand.name, "q") == 0 || strcasecmp(nextCommand.name, "quit") == 0 || strcasecmp(nextCommand.name, "exit") == 0) {
 			exitBool = 1;
 		} else if (nextCommand.name[0] != '\0') {  // execute program if there is a command to run
 			runCommand(&nextCommand);

@@ -13,6 +13,7 @@ static int MAXNUMBACKGROUNDPROCS = 10;
 static int numProcessInBack = 0;
 static int processIDsInBack[10] = {-2,-2,-2,-2,-2,-2,-2,-2,-2,-2}; //initialize all with -2, as that will be the "not active process ID" slot indicator
 static char* processNamesInBack[10];
+
 static int DEBUG = 0;
 
 int runCommand(command * nextCommand)
@@ -98,6 +99,8 @@ int runCommand(command * nextCommand)
         return -1; //should never hit this line
     }
     else if(pid > 0) { //Parent Process     
+    
+    	//Index Background Processes in arrays
         if(strncmp(nextCommand->argv[(nextCommand->argc)], "&", 1) == 0) {//background process
             if(numProcessInBack!=MAXNUMBACKGROUNDPROCS){// dont index process ID if there are already MANUMBACKGROUNDPROCS created
 	            for(int processCount =0; processCount<10; processCount++){//find first free slot (-2) in processIDsInBack
@@ -113,18 +116,19 @@ int runCommand(command * nextCommand)
 	        }
 	        
 	    }
-        else{//foreground process
+        else{//foreground process - wait until finished to return
             waitpid(pid,&status,0); // hold for child that was just spawned
             if(DEBUG==1){
                 printf("status=%d , pid=%d\n",status,pid);
             }
         }  
         
+        //Determine if currently indexed background processes have finished and remove from index if they have
         if (numProcessInBack > 0){
             for(int processCount =0; processCount<10; processCount++){
                 if(processIDsInBack[processCount] != -2){ //it's a valid ID
                     if(waitpid(processIDsInBack[processCount], &status, WNOHANG) == processIDsInBack[processCount]){
-                        //process finished
+                        //background process finished
                         printf("[%d]\tDone\t\t%d - %s\n",processCount+1,processIDsInBack[processCount],processNamesInBack[processCount]);
                         free(processNamesInBack[processCount]);
                         numProcessInBack--;
@@ -148,7 +152,7 @@ int runCommand(command * nextCommand)
         
     }
     else{
-        printf("error, foreground child was not created properly\n");
+        printf("error, child was not created properly\n");
     } 
     
     if (DEBUG ==1 && numProcessInBack > 0){
