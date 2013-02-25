@@ -8,7 +8,7 @@
 typedef struct command_t {
     int argc;
     char* name;
-    char* argv[99]; //name is repeated in argv[0]
+    char* argv[100]; //name is repeated in argv[0]
 } command;
 
 #endif
