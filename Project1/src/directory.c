@@ -2,9 +2,6 @@
 #include<stdio.h>
 #include<string.h>
 #include<unistd.h>
-#include <sys/types.h>
-#include <sys/wait.h>
-#include <sys/stat.h>
 #include "bfsh.h"
 #include "directory.h"
 
@@ -67,6 +64,7 @@ void cd_Command(char* argument){
 			if(DEBUG==1){
 			    printf (": %i .. found ", count1);
 			}
+			tmpstring[0] = '\0';
 		} else {
 			while (strncmp(argument+3*i+count2, "/", 1) == 0) {
 				count2++;
@@ -75,7 +73,7 @@ void cd_Command(char* argument){
 			    printf (": %i char until file ", count2);
 			}
 			if (strncmp (argument+3*i+count2-1, "/", 1) == 0) {
-				strncpy (tmpstring, argument+3*i+count2, strlen(argument)-3*i-count2);
+				strcpy (tmpstring, argument+3*i+count2);
 			} else {
 				count1 = 0;
 				printf("Invalid Format\n");
