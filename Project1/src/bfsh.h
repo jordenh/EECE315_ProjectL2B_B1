@@ -1,5 +1,5 @@
-#ifndef BFSH_h
-#define BFSH_h
+#ifndef BFSH_H
+#define BFSH_H
 
 #define BUFFER 300
 #define TRUE 1

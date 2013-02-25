@@ -19,35 +19,39 @@ static int DEBUG = 0;
 int runCommand(command * nextCommand)
 {
     pid_t pid;
-    
+    int numPathVars = 0;
+    int status;
+    int startIndexPathString; 
+    unsigned int foundProgramBool = 0;
     char* pathStrings[25];
-    for(int i=0;i<25;i++){
-        pathStrings[i] = (char*)malloc(BUFFER+1); 
+    char* pathString = malloc(BUFFER + 1);
+    char* token = malloc(BUFFER + 1);
+    char* concatenatedAbsPath = malloc(BUFFER + 1);
+    
+    for(int i = 0; i < 25; i++){
+        pathStrings[i] = malloc(BUFFER + 1); 
     }
-    char* pathString = (char*)malloc(BUFFER+1);
+
     strcpy(pathString,getenv("PATH"));
+
     if(DEBUG==1){
         printf("You're pathString val is: %s\n",pathString);
     }
-    char* token = (char*)malloc(BUFFER+1);
-	
-	int numPathVars = 0;
-	token = strtok(pathString, ":");
-	while(token){
+
+    token = strtok(pathString, ":");
+    while(token){
 	    strcpy(pathStrings[numPathVars], token);
 	    numPathVars++;
-		token = strtok(NULL, ":");
-	}
-	free(token);
-	//NOTE: numPathVars is 1 too high, so on last pass of the search loop within the child, rather than searching a Path location, search CWD.
+	    token = strtok(NULL, ":");
+    }
+    free(token);
+    //NOTE: numPathVars is 1 too high, so on last pass of the search loop within the child, rather than searching a Path location, search CWD.
     
-    char* concatenatedAbsPath = (char*)malloc(BUFFER);
-    int status;
-	pid = fork();
+    pid = fork();
 	
-	if(pid == 0) { // child process
+    if(pid == 0) { // child process
 	    if(strncmp(nextCommand->argv[(nextCommand->argc)], "&", 1) == 0) {//background process
-	        if(numProcessInBack==MAXNUMBACKGROUNDPROCS){
+	        if(numProcessInBack == MAXNUMBACKGROUNDPROCS){
 	            printf("Error: cannot create more than %d background processes\n", MAXNUMBACKGROUNDPROCS);
 	            abort();
 	        }
@@ -56,17 +60,16 @@ int runCommand(command * nextCommand)
 		nextCommand->argv[(nextCommand->argc)] = '\0'; // force "&" argv to NULL char, on Child 
 	    }
 	
-		unsigned int foundProgramBool = 0;
-		for(int i=numPathVars;i>=0;i--){  //search through different directories to discover which one has the desired program
+		for(int i = numPathVars; i >= 0; i--){  //search through different directories to discover which one has the desired program
 			strcpy(concatenatedAbsPath,pathStrings[i]);
-			int startIndexPathString = strlen(pathStrings[i]);
+			startIndexPathString = strlen(pathStrings[i]);
 			concatenatedAbsPath[startIndexPathString] = '/';
 			strcpy(&(concatenatedAbsPath[startIndexPathString + 1]) ,nextCommand->name);
 			
-			if(i==numPathVars){
+			if(i == numPathVars){
 				strcpy(&concatenatedAbsPath[0],nextCommand->name); //search CWD, since this index holds no path information      
 			} 
-			if(DEBUG==1){
+			if(DEBUG == 1){
 				printf("concatenatedAbsPath = --%s--\n",concatenatedAbsPath);
 			}
 			
@@ -85,13 +88,13 @@ int runCommand(command * nextCommand)
 			abort();
 		}
 		
-        if(DEBUG==1){
+        if(DEBUG == 1){
             printf("***Attempting to use execv, in %s***\n",concatenatedAbsPath);
         }
         free(nextCommand->argv[nextCommand->argc + 1]); // Free child's memory at this location, before it gets changed.
         nextCommand->argv[nextCommand->argc + 1] = '\0'; // force next argv to NULL char, on Child 
      
-        if(execv(concatenatedAbsPath,nextCommand->argv) == -1){
+        if(execv(concatenatedAbsPath, nextCommand->argv) == -1){
             printf("ERROR, program did not execute properly: aborting.\n");                  
             abort();
         }
@@ -102,12 +105,12 @@ int runCommand(command * nextCommand)
     
     	//Index Background Processes in arrays
         if(strncmp(nextCommand->argv[(nextCommand->argc)], "&", 1) == 0) {//background process
-            if(numProcessInBack!=MAXNUMBACKGROUNDPROCS){// dont index process ID if there are already MANUMBACKGROUNDPROCS created
-	            for(int processCount =0; processCount<10; processCount++){//find first free slot (-2) in processIDsInBack
+            if(numProcessInBack!= MAXNUMBACKGROUNDPROCS){// dont index process ID if there are already MANUMBACKGROUNDPROCS created
+	            for(int processCount = 0; processCount < 10; processCount++){//find first free slot (-2) in processIDsInBack
 	                if(processIDsInBack[processCount] == -2){
 	                    processIDsInBack[processCount] = pid; 
-	                    processNamesInBack[processCount] = (char*)malloc(strlen(nextCommand->name));
-	                    strncpy(processNamesInBack[processCount],nextCommand->name, strlen(nextCommand->name));
+	                    processNamesInBack[processCount] = malloc(strlen(nextCommand->name) + 2);
+	                    strncpy(processNamesInBack[processCount], nextCommand->name, (strlen(nextCommand->name) + 1));
 	                    numProcessInBack++;
 	                    printf("[%d] %d\n",processCount+1, pid);   
 	                    break;
@@ -117,19 +120,19 @@ int runCommand(command * nextCommand)
 	        
 	    }
         else{//foreground process - wait until finished to return
-            waitpid(pid,&status,0); // hold for child that was just spawned
-            if(DEBUG==1){
+            waitpid(pid, &status,0); // hold for child that was just spawned
+            if(DEBUG == 1){
                 printf("status=%d , pid=%d\n",status,pid);
             }
         }  
         
         //Determine if currently indexed background processes have finished and remove from index if they have
-        if (numProcessInBack > 0){
-            for(int processCount =0; processCount<MAXNUMBACKGROUNDPROCS; processCount++){
+        if(numProcessInBack > 0){
+            for(int processCount = 0; processCount < MAXNUMBACKGROUNDPROCS; processCount++){
                 if(processIDsInBack[processCount] != -2){ //it's a valid ID
                     if(waitpid(processIDsInBack[processCount], &status, WNOHANG) == processIDsInBack[processCount]){
                         //background process finished
-                        printf("[%d]\tDone\t\t%d - %s\n",processCount+1,processIDsInBack[processCount],processNamesInBack[processCount]);
+                        printf("[%d]\tDone\t\t%d - %s\n", processCount+1, processIDsInBack[processCount], processNamesInBack[processCount]);
                         free(processNamesInBack[processCount]);
                         numProcessInBack--;
                         processIDsInBack[processCount] = -2; //set back to invalid process ID
@@ -142,7 +145,7 @@ int runCommand(command * nextCommand)
                     }
                     else{
                         //process changed state in some other way
-                        printf("[%d]\tChangedState\t%d\n",processCount+1,processIDsInBack[processCount]);
+                        printf("[%d]\tChangedState\t%d\n", processCount+1, processIDsInBack[processCount]);
                     }
                 
                 }
@@ -155,15 +158,15 @@ int runCommand(command * nextCommand)
         printf("error, child was not created properly\n");
     } 
     
-    if (DEBUG ==1 && numProcessInBack > 0){
-        printf("numProcessInBack= %d\n",numProcessInBack);
-        for(int processCount =0; processCount<10; processCount++){
-           printf("processIDsInBack[%d]= %d\n",processCount, processIDsInBack[processCount]); 
+    if(DEBUG == 1 && numProcessInBack > 0){
+        printf("numProcessInBack= %d\n", numProcessInBack);
+        for(int processCount = 0; processCount < 10; processCount++){
+           printf("processIDsInBack[%d]= %d\n", processCount, processIDsInBack[processCount]); 
         }
     }
     
     free(concatenatedAbsPath);
-    for(int i=0;i<25;i++){
+    for(int i = 0; i < 25; i++){
         free(pathStrings[i]);
     }
     free(pathString);
