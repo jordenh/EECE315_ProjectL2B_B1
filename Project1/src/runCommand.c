@@ -39,7 +39,7 @@ int runCommand(command * nextCommand)
 		token = strtok(NULL, ":");
 	}
 	free(token);
-	//NOTE: numPathVars is 1 too high, so on last pass of fork, rather than searching a Path location, search CWD.
+	//NOTE: numPathVars is 1 too high, so on last pass of the search loop within the child, rather than searching a Path location, search CWD.
     
     char* concatenatedAbsPath = (char*)malloc(BUFFER);
     int status;
