@@ -14,11 +14,10 @@ int main(void){
 	int exitBool = FALSE;
 	int nbytes = BUFFER;
 	int command_count = 0;
-	char *cwd = (char*)malloc(nbytes+1);
 	char *tempStr = (char*)malloc(nbytes+1);
 	char CWD[BUFFER];
 	char *hostname = (char*)malloc(nbytes+1);
-	char *user = (char*)malloc(nbytes+1);
+	char *user = NULL;
 	command nextCommand ;
 	nextCommand.argc = 0;
 	nextCommand.name = (char*)malloc(nbytes+1);
@@ -68,8 +67,8 @@ int main(void){
 		command_count++;
 	}
 	
+	free(hostname);
 	free(tempStr);
-	free(cwd);
 	free(nextCommand.name);
 	for(int i=0;i<100;i++){
 		free(nextCommand.argv[i]);

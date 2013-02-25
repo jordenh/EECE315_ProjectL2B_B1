@@ -45,7 +45,7 @@ int runCommand(command * nextCommand)
     int status;
 	pid = fork();
 	
-	if(pid == 0) {
+	if(pid == 0) { // child process
 	    if(strncmp(nextCommand->argv[(nextCommand->argc)], "&", 1) == 0) {//background process
 	        if(numProcessInBack==MAXNUMBACKGROUNDPROCS){
 	            printf("Error: cannot create more than %d background processes\n", MAXNUMBACKGROUNDPROCS);
@@ -125,7 +125,7 @@ int runCommand(command * nextCommand)
         
         //Determine if currently indexed background processes have finished and remove from index if they have
         if (numProcessInBack > 0){
-            for(int processCount =0; processCount<10; processCount++){
+            for(int processCount =0; processCount<MAXNUMBACKGROUNDPROCS; processCount++){
                 if(processIDsInBack[processCount] != -2){ //it's a valid ID
                     if(waitpid(processIDsInBack[processCount], &status, WNOHANG) == processIDsInBack[processCount]){
                         //background process finished
