@@ -1,13 +1,15 @@
-EECE315_ProjectL2B_B1
+UBC EECE<br \>EECE 315 Project 1<br \>Unix/Linux Shell
 =====================
 
-Project Group for EECE 315
+Unix/Linux shell project for Operating Systems and File Systems course
 
-This Repository Shall be split up into folders for each project.
-
-Each team member should use discretion before pushing any files into the repository.
-Following practises taught in EECE 310, pull requests should be used if the commits to be made to the master branch could break the build.
-
+Team Members:
+<ul>
+<li>Jorden Hetherington</li>
+<li>Steven Erenst</li>
+<li>Sarah Holdijk</li>
+<li>Vince Hua</li>
+</ul>
 
 For Questions, contact Jorden Hetherington at
 jorden.hetherington@gmail.com
