@@ -17,5 +17,5 @@
 *.app
 
 #Obj and Bin directories
-Project1/bin/
-Project1/obj/
+bin/
+obj/
