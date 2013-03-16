@@ -5,7 +5,7 @@ CC := gcc
 EXECUTABLE := bfsh 
 
 #Compiler Flags
-CFLAGS := -std=gnu99 -Wall
+CFLAGS := -std=gnu99 -Wall -g
 
 #Linker Flags
 LDFLAGS := -g
