@@ -38,5 +38,5 @@ obj/%.o : src/%.c
 #Rule to clean generated files
 .PHONY : clean
 clean  :
-	$(RM) $(addprefix bin/, $(EXECUTABLE)) $(OBJ)
+	$(RM) -r bin/ obj/
 
