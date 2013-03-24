@@ -70,10 +70,11 @@ int main(void){
 		} else if (nextCommand.name[0] != '\0') {  // execute program if there is a command to run
 			runCommand(&nextCommand);
 		}
-				command_count++;
+		
+		command_count++;
 	}
 
-	//Free dynamically allocated memory	
+	//Free dynamically allocated memory
 	free(hostname);
 	free(tempStr);
 	free(nextCommand.name);

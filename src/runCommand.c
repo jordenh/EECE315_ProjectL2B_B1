@@ -25,7 +25,7 @@ int runCommand(command * nextCommand)
     unsigned int foundProgramBool = 0;
     char* pathStrings[25];
     char* pathString = malloc(BUFFER + 1);
-    char* token = malloc(BUFFER + 1);
+    char* token = NULL;
     char* concatenatedAbsPath = malloc(BUFFER + 1);
     
     for(int i = 0; i < 25; i++){
@@ -44,7 +44,7 @@ int runCommand(command * nextCommand)
 	    numPathVars++;
 	    token = strtok(NULL, ":");
     }
-    free(token);
+    
     //NOTE: numPathVars is 1 too high, so on last pass of the search loop within the child, rather than searching a Path location, search CWD.
     
     pid = fork();
@@ -61,14 +61,16 @@ int runCommand(command * nextCommand)
 	    }
 	
 		for(int i = numPathVars; i >= 0; i--){  //search through different directories to discover which one has the desired program
-			strcpy(concatenatedAbsPath,pathStrings[i]);
-			startIndexPathString = strlen(pathStrings[i]);
-			concatenatedAbsPath[startIndexPathString] = '/';
-			strcpy(&(concatenatedAbsPath[startIndexPathString + 1]) ,nextCommand->name);
-			
 			if(i == numPathVars){
 				strcpy(&concatenatedAbsPath[0],nextCommand->name); //search CWD, since this index holds no path information      
-			} 
+			}
+			else{ 
+				strcpy(concatenatedAbsPath,pathStrings[i]);
+				startIndexPathString = strlen(pathStrings[i]);
+				concatenatedAbsPath[startIndexPathString] = '/';
+				strcpy(&(concatenatedAbsPath[startIndexPathString + 1]) ,nextCommand->name);
+			}
+		
 			if(DEBUG == 1){
 				printf("concatenatedAbsPath = --%s--\n",concatenatedAbsPath);
 			}
